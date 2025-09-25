@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ACE Ductwork Processor</title>
+  <style>
+    body { 
+      font-family: Arial; 
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    #results { 
+      margin-top: 20px; 
+    }
+    .table-container {
+      margin: 20px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+    }
+    .section-header {
+      margin-top: 20px;
+      color: #333;
+    }
+    .download-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    .download-btn:hover {
+      background-color: #0056b3;
+    }
+    .error {
+      color: red;
+      padding: 10px;
+      border: 1px solid red;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload ACE Drawing PDF</h2>
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload & Process</button>
+
+  <div id="results"></div>
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const results = document.getElementById("results");
+      
+      if (!fileInput.files.length) {
+        alert("Please select a PDF file first");
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        results.innerHTML = "<p>Processing... Please wait.</p>";
+        
+        const res = await fetch("/process", { method: "POST", body: formData });
+        const data = await res.json();
+
+        // Generate HTML for the results
+        let html = "<h3>Results</h3>";
+
+        // For each section (supply/extract)
+        ["supply", "extract"].forEach(section => {
+          if (data.results[section]) {
+            html += `<div class="section-header"><h4>${section.charAt(0).toUpperCase() + section.slice(1)} Measurements</h4>`;
+            
+            // Lengths table
+            const lengths = data.results[section].lengths_mm;
+            if (lengths && Object.keys(lengths).length > 0) {
+              html += `
+                <div class="table-container">
+                  <h5>Ductwork Lengths</h5>
+                  <table>
+                    <tr>
+                      <th>Size</th>
+                      <th>Length (mm)</th>
+                      <th>Length (m)</th>
+                    </tr>
+              `;
+              Object.entries(lengths).forEach(([size, length_mm]) => {
+                html += `
+                  <tr>
+                    <td>${size}</td>
+                    <td>${length_mm.toFixed(2)}</td>
+                    <td>${(length_mm / 1000).toFixed(3)}</td>
+                  </tr>
+                `;
+              });
+              html += "</table></div>";
+            }
+
+            // Components table
+            const counts = data.results[section].counts;
+            if (counts && Object.keys(counts).length > 0) {
+              html += `
+                <div class="table-container">
+                  <h5>Component Counts</h5>
+                  <table>
+                    <tr>
+                      <th>Component</th>
+                      <th>Count</th>
+                    </tr>
+              `;
+              Object.entries(counts).forEach(([component, count]) => {
+                html += `
+                  <tr>
+                    <td>${component}</td>
+                    <td>${count}</td>
+                  </tr>
+                `;
+              });
+              html += "</table></div>";
+            }
+            
+            html += "</div>";
+          }
+        });
+
+        // Notes section
+        if (data.results.notes) {
+          html += "<div class='section-header'><h4>Notes</h4><ul>";
+          Object.entries(data.results.notes).forEach(([key, value]) => {
+            html += `<li><strong>${key}:</strong> ${value}</li>`;
+          });
+          html += "</ul></div>";
+        }
+
+        // PDF download link
+        if (data.pdf_url) {
+          html += `<a href="${data.pdf_url}" class="download-btn" target="_blank">Download PDF Report</a>`;
+        }
+
+        results.innerHTML = html;
+      } catch (error) {
+        results.innerHTML = `<div class="error">Error processing file: ${error.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

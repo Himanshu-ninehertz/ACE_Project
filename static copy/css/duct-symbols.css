@@ -1,0 +1,65 @@
+.duct-symbol {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    vertical-align: middle;
+}
+
+.duct-flex {
+    border: 1px solid #000;
+    border-style: dashed;
+}
+
+.duct-bend {
+    position: relative;
+    border-left: 1px solid #000;
+    border-bottom: 1px solid #000;
+    width: 20px;
+    height: 20px;
+}
+
+.duct-louvre {
+    position: relative;
+    border: 1px solid #000;
+    height: 15px;
+}
+.duct-louvre:before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    top: 50%;
+    height: 1px;
+    background: #000;
+}
+
+.duct-grille {
+    position: relative;
+    border: 1px solid #000;
+    height: 15px;
+}
+.duct-grille:before,
+.duct-grille:after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    height: 1px;
+    background: #000;
+}
+.duct-grille:before { top: 4px; }
+.duct-grille:after { bottom: 4px; }
+
+.duct-attenuator {
+    position: relative;
+    border: 1px solid #000;
+}
+.duct-attenuator:before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 2px;
+    bottom: 2px;
+    width: 1px;
+    background: #000;
+}

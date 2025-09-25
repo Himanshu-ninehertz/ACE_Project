@@ -1,0 +1,7 @@
+fastapi
+python-multipart
+uvicorn
+PyMuPDF
+ezdxf
+matplotlib
+Pillow
